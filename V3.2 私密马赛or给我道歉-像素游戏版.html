@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>私密马赛or给我道歉！</title>
+<script src="https://cdn.bootcdn.net/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>if(typeof QRCode==='undefined'){document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>')}</script>
+<script src="https://cdn.bootcdn.net/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>if(typeof html2canvas==='undefined'){document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>')}</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0d1a;--bg2:#1a1a2e;--panel:#22223a;--panel2:#2a2a4a;
+  --cyan:#00d9ff;--purple:#6c5ce7;--red:#ff4757;--yellow:#feca57;--green:#2ed573;
+  --text:#e8e8f0;--text-dim:#8888aa;--border:#444466;--pixel-shadow:4px 4px 0 #000;
+}
+html,body{height:100%}
+body{
+  font-family:'Noto Sans SC','PingFang SC','HarmonyOS Sans SC','Microsoft YaHei',sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;
+  background-image:
+    linear-gradient(rgba(108,92,231,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(108,92,231,.05) 1px,transparent 1px);
+  background-size:20px 20px;
+}
+body::before{
+  content:'';position:fixed;top:0;left:0;right:0;height:2px;z-index:100;pointer-events:none;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  animation:scan 4s linear infinite;
+}
+@keyframes scan{0%{transform:translateY(0)}100%{transform:translateY(100vh)}}
+.title-font{font-family:'ZCOOL QingKe HuangYou','PingFang SC','Microsoft YaHei',sans-serif;letter-spacing:2px;font-weight:700}
+.pixel-font{font-family:'Press Start 2P','Courier New',monospace}
+/* 像素装饰 */
+.deco{position:fixed;font-family:'Press Start 2P',monospace;font-size:16px;opacity:.15;pointer-events:none;z-index:0;animation:blink 2s steps(2) infinite}
+@keyframes blink{0%,100%{opacity:.15}50%{opacity:.05}}
+/* 屏幕系统 */
+.screen{display:none;min-height:100vh;padding:24px 20px;position:relative;z-index:1;animation:fadeIn .3s steps(4)}
+.screen.active{display:flex;flex-direction:column;align-items:center;justify-content:center}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.card{background:var(--panel);border:3px solid var(--border);border-radius:0;padding:32px 24px;max-width:420px;width:100%;text-align:center;position:relative;box-shadow:var(--pixel-shadow)}
+.card-narrow{max-width:380px}
+.card::before{content:'■';position:absolute;top:-12px;left:-12px;color:var(--cyan);font-size:12px}
+.card::after{content:'■';position:absolute;bottom:-12px;right:-12px;color:var(--purple);font-size:12px}
+/* 按钮 */
+.btn{display:inline-block;padding:14px 36px;border:3px solid var(--border);border-radius:0;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;transition:none;text-align:center;text-decoration:none;box-shadow:var(--pixel-shadow)}
+.btn-primary{background:var(--purple);color:#fff;border-color:var(--purple)}
+.btn-primary:active{transform:translate(4px,4px);box-shadow:0 0 0 #000}
+.btn-cyan{background:var(--cyan);color:#000;border-color:var(--cyan)}
+.btn-cyan:active{transform:translate(4px,4px);box-shadow:0 0 0 #000}
+.btn-ghost{background:var(--bg2);color:var(--cyan);border-color:var(--cyan)}
+.btn-yellow{background:var(--yellow);color:#000;border-color:var(--yellow)}
+.btn-yellow:active{transform:translate(4px,4px);box-shadow:0 0 0 #000}
+.btn-sm{padding:10px 20px;font-size:14px}
+.btn-full{display:block;width:100%}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+/* 开始页 */
+.start-title{font-size:36px;color:var(--cyan);margin-bottom:8px;line-height:1.2;text-shadow:3px 3px 0 var(--purple)}
+.start-sub{font-size:15px;color:var(--text-dim);margin-bottom:28px;line-height:1.6}
+.start-emojis{font-family:'Press Start 2P',monospace;font-size:40px;margin-bottom:20px;color:var(--yellow);animation:pulse 1s steps(2) infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.btn-stack{display:flex;flex-direction:column;gap:12px;width:100%;max-width:280px;margin:0 auto}
+/* 输入 */
+.input-group{margin-bottom:20px;text-align:left}
+.input-label{font-size:14px;color:var(--cyan);margin-bottom:8px;font-weight:500}
+.input{width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:0;font-size:16px;font-family:inherit;background:var(--bg2);color:var(--text)}
+.input:focus{outline:none;border-color:var(--cyan)}
+.chip-row{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:8px 16px;border:2px solid var(--border);background:var(--bg2);font-size:14px;font-weight:500;cursor:pointer;color:var(--text)}
+.chip.active{border-color:var(--cyan);background:var(--cyan);color:#000}
+.chip:active{transform:translate(2px,2px)}
+/* QR页 */
+.qr-wrap{background:#fff;padding:16px;display:inline-block;margin:16px 0}
+.qr-wrap img,.qr-wrap canvas{display:block}
+.pub-id{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--yellow);margin-top:8px;letter-spacing:2px}
+.answer-url{font-size:11px;color:var(--text-dim);word-break:break-all;background:var(--bg2);padding:8px 12px;margin-top:12px;line-height:1.4;border:1px solid var(--border)}
+/* 答题 */
+.quiz-top{width:100%;max-width:420px;margin-bottom:16px}
+.progress-bar{height:12px;background:var(--bg2);border:2px solid var(--border);position:relative;overflow:hidden}
+.progress-fill{height:100%;background:var(--cyan);transition:width .2s steps(8)}
+.progress-text{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--text-dim);margin-top:6px;text-align:center}
+.group-label{font-size:14px;font-weight:700;color:var(--cyan);background:var(--bg2);padding:6px 16px;display:inline-block;margin-bottom:20px;border:2px solid var(--cyan)}
+.group-label.b{color:var(--yellow);border-color:var(--yellow)}
+.q-card{padding:36px 24px}
+.q-num{font-family:'Press Start 2P',monospace;font-size:12px;color:var(--text-dim);margin-bottom:8px}
+.q-text{font-size:22px;font-weight:700;color:var(--text);margin-bottom:28px;line-height:1.5}
+.q-prefix{color:var(--cyan);font-size:16px;display:block;margin-bottom:4px}
+.q-options{display:flex;flex-direction:column;gap:10px}
+.q-opt{padding:16px;border:2px solid var(--border);background:var(--bg2);font-size:16px;font-weight:500;cursor:pointer;text-align:center;font-family:inherit;color:var(--text);box-shadow:var(--pixel-shadow)}
+.q-opt:active{transform:translate(4px,4px);box-shadow:0 0 0 #000}
+.q-opt.yes:active{background:var(--red);color:#fff;border-color:var(--red)}
+.q-opt.no:active{background:var(--green);color:#000;border-color:var(--green)}
+/* 结果 */
+.result-emoji{font-family:'Press Start 2P',monospace;font-size:56px;margin-bottom:8px;color:var(--yellow);animation:pop .3s steps(3)}
+@keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+.result-title{font-size:28px;margin-bottom:12px}
+.result-title.a-win{color:var(--red)}
+.result-title.b-win{color:var(--yellow)}
+.result-title.tie{color:var(--green)}
+.result-desc{font-size:15px;color:var(--text-dim);line-height:1.6;margin-bottom:20px}
+.score-row{display:flex;gap:12px;margin-bottom:20px}
+.score-box{flex:1;background:var(--bg2);border:2px solid var(--border);padding:16px 8px}
+.score-box.b{border-color:var(--yellow)}
+.score-num{font-size:28px;font-weight:700;color:var(--red)}
+.score-box.b .score-num{color:var(--yellow)}
+.score-label{font-size:12px;color:var(--text-dim);margin-top:4px}
+/* 看板 */
+.dash-stat{display:flex;gap:12px;margin-bottom:20px}
+.dash-stat-box{flex:1;background:var(--bg2);border:2px solid var(--border);padding:14px}
+.dash-stat-box.b{border-color:var(--yellow)}
+.dash-stat-num{font-size:24px;font-weight:700;color:var(--red)}
+.dash-stat-box.b .dash-stat-num{color:var(--yellow)}
+.dash-stat-label{font-size:12px;color:var(--text-dim)}
+.dash-section{margin-bottom:20px;text-align:left}
+.dash-section h4{font-size:15px;color:var(--cyan);margin-bottom:10px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px}
+.bar-label{flex:0 0 140px;color:var(--text-dim);line-height:1.3}
+.bar-track{flex:1;height:22px;background:var(--bg2);border:1px solid var(--border);overflow:hidden;position:relative}
+.bar-fill{height:100%;background:var(--red);transition:width .3s steps(8);display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:11px;color:#fff;font-weight:700}
+.bar-fill.b{background:var(--yellow);color:#000}
+.bar-fill.tie{background:var(--green);color:#000}
+.judge-row{display:flex;gap:8px;margin-bottom:8px}
+.judge-box{flex:1;text-align:center;padding:12px 8px;background:var(--bg2);border:2px solid var(--border)}
+.judge-box.b{border-color:var(--yellow)}
+.judge-box.tie{border-color:var(--green)}
+.judge-num{font-size:20px;font-weight:700}
+.judge-label{font-size:11px;color:var(--text-dim);margin-top:2px}
+/* 分享卡片 */
+.share-card{width:375px;overflow:hidden;position:relative;box-shadow:8px 8px 0 #000}
+.share-card-bg{background:linear-gradient(160deg,#1a1a2e,#16213e 50%,#0f3460);padding:40px 28px;color:var(--text);text-align:center;border:3px solid var(--cyan)}
+.share-card-bg h2{font-family:'ZCOOL QingKe HuangYou',sans-serif;font-size:30px;margin-bottom:6px;line-height:1.2;color:var(--cyan);text-shadow:3px 3px 0 var(--purple)}
+.share-card-bg .sub{font-size:14px;color:var(--text-dim);margin-bottom:20px}
+.share-card-bg .pub-name{font-size:18px;font-weight:700;background:var(--purple);display:inline-block;padding:6px 18px;margin-bottom:16px;color:#fff}
+.share-card-bg .qr-area{background:#fff;padding:16px;display:inline-block;margin-bottom:16px}
+.share-card-bg .tagline{font-size:15px;line-height:1.5;margin-bottom:8px;color:var(--yellow)}
+.share-card-bg .hint{font-size:12px;color:var(--text-dim);margin-top:12px}
+.share-card-bg .footer{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--text-dim);margin-top:16px;padding-top:12px;border-top:1px solid var(--border)}
+/* 杂项 */
+.badge-cloud{position:fixed;top:12px;right:12px;font-family:'Press Start 2P',monospace;font-size:9px;padding:4px 10px;z-index:99}
+.badge-cloud.on{background:var(--green);color:#000}
+.badge-cloud.off{background:var(--red);color:#fff}
+.empty{text-align:center;padding:40px 20px;color:var(--text-dim);font-size:15px}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--bg2);color:var(--cyan);border:2px solid var(--cyan);padding:10px 20px;font-size:14px;z-index:999;opacity:0;transition:opacity .2s steps(2)}
+.toast.show{opacity:1}
+.section-title{font-size:18px;font-weight:700;margin-bottom:6px;color:var(--cyan)}
+.section-sub{font-size:14px;color:var(--text-dim);margin-bottom:24px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="deco" style="top:10%;left:5%">★</div>
+<div class="deco" style="top:20%;right:8%;animation-delay:1s">◆</div>
+<div class="deco" style="bottom:15%;left:7%;animation-delay:2s">▲</div>
+<div class="deco" style="bottom:25%;right:5%;animation-delay:.5s">●</div>
+<div id="cloud-badge" class="badge-cloud off">LOCAL</div>
+<div id="toast" class="toast"></div>
+
+<!-- ========== 开始页 ========== -->
+<section id="screen-start" class="screen active">
+  <div class="card">
+    <div class="start-emojis">VS</div>
+    <h1 class="start-title title-font">私密马赛<br>OR 给我道歉！</h1>
+    <p class="start-sub">两组小问题，算算谁欠谁的<br>轻松好玩，不上纲上线～</p>
+    <div class="btn-stack">
+      <button class="btn btn-primary btn-full" onclick="goCreate()">CREATE QUIZ</button>
+      <button class="btn btn-cyan btn-full" onclick="goResultsLogin()">VIEW RESULTS</button>
+      <button class="btn btn-ghost btn-full" onclick="goAnswerLogin()">ENTER ID</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 创建问卷 ========== -->
+<section id="screen-create" class="screen">
+  <div class="card">
+    <h2 class="section-title">CREATE QUIZ</h2>
+    <p class="section-sub">填好信息，生成你的专属二维码</p>
+    <div class="input-group">
+      <div class="input-label">> 你的昵称</div>
+      <input class="input" id="create-name" placeholder="PLAYER ONE" maxlength="12">
+    </div>
+    <div class="input-group">
+      <div class="input-label">> 每组抽几道题？</div>
+      <div class="chip-row" id="count-chips">
+        <div class="chip" data-v="5">5</div>
+        <div class="chip active" data-v="8">8</div>
+        <div class="chip" data-v="10">10</div>
+        <div class="chip" data-v="15">15</div>
+        <div class="chip" data-v="25">ALL 25</div>
+      </div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">> 出题模式</div>
+      <div class="chip-row" id="mode-chips">
+        <div class="chip active" data-v="random">RANDOM</div>
+        <div class="chip" data-v="all">SHUFFLE ALL</div>
+      </div>
+    </div>
+    <div style="background:var(--bg2);border:2px solid var(--border);padding:14px;margin-bottom:20px;text-align:left">
+      <div style="font-size:13px;color:var(--cyan);font-weight:700;margin-bottom:6px">> HOW TO PLAY</div>
+      <div style="font-size:12px;color:var(--text-dim);line-height:1.5">
+        <div>STAGE 1: 我有没有对不起你</div>
+        <div>STAGE 2: 你有没有对不起我</div>
+        <div>WIN: 哪组"有"多，谁就低头！</div>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="generateQuiz()">GENERATE QR</button>
+    <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="showScreen('screen-start')">BACK</button>
+  </div>
+</section>
+
+<!-- ========== 二维码页 ========== -->
+<section id="screen-qr" class="screen">
+  <div class="card">
+    <h2 class="section-title">QR CODE READY!</h2>
+    <p class="section-sub">把这个码发给TA，扫码就能答题</p>
+    <div class="qr-wrap" id="qr-display"></div>
+    <div class="pub-id" id="qr-pubid"></div>
+    <div class="answer-url" id="qr-url"></div>
+    <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;justify-content:center">
+      <button class="btn btn-primary btn-sm" onclick="showShareCard()">SHARE CARD</button>
+      <button class="btn btn-cyan btn-sm" onclick="goDashboard()">VIEW RESULTS</button>
+      <button class="btn btn-ghost btn-sm" onclick="copyAnswerUrl()">COPY URL</button>
+    </div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="showScreen('screen-start')">BACK</button>
+  </div>
+</section>
+
+<!-- ========== 分享卡片 ========== -->
+<section id="screen-share" class="screen">
+  <div class="card card-narrow" style="background:transparent;border:none;box-shadow:none;padding:0">
+    <div id="share-card-el" class="share-card">
+      <div class="share-card-bg">
+        <h2>私密马赛<br>OR 给我道歉！</h2>
+        <div class="sub">来算算我们谁欠谁的～</div>
+        <div class="pub-name" id="share-name">PLAYER ONE</div>
+        <div style="color:var(--cyan);font-size:14px">喊你来算账啦！</div>
+        <div class="qr-area" id="share-qr"></div>
+        <div class="tagline">SCAN → 两组小问题<br>看最后谁该低头认错</div>
+        <div class="hint">答卷完全匿名，放心作答</div>
+        <div class="footer">PRIVATE MA SA OR APOLOGIZE</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:20px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" onclick="downloadShareCard()">SAVE IMG</button>
+      <button class="btn btn-cyan btn-sm" onclick="shareUrl()">SHARE</button>
+      <button class="btn btn-ghost btn-sm" onclick="showScreen('screen-qr')">BACK</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 结果看板 ========== -->
+<section id="screen-dashboard" class="screen">
+  <div class="card" style="max-width:460px">
+    <h2 class="section-title" id="dash-title">RESULTS</h2>
+    <p class="section-sub" id="dash-sub">LOADING...</p>
+    <div id="dash-content"></div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-cyan btn-sm" onclick="loadDashboard()">REFRESH</button>
+      <button class="btn btn-ghost btn-sm" onclick="showScreen('screen-start')">BACK</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 查看结果登录 ========== -->
+<section id="screen-results-login" class="screen">
+  <div class="card card-narrow">
+    <h2 class="section-title">VIEW RESULTS</h2>
+    <p class="section-sub">输入你的发布者ID</p>
+    <div class="input-group">
+      <input class="input" id="login-pubid" placeholder="8-CHAR ID" maxlength="8" style="text-transform:uppercase">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="loginAndView()">ENTER</button>
+    <div id="pub-list" style="margin-top:16px;text-align:left"></div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="showScreen('screen-start')">BACK</button>
+  </div>
+</section>
+
+<!-- ========== 答题登录 ========== -->
+<section id="screen-answer-login" class="screen">
+  <div class="card card-narrow">
+    <h2 class="section-title">ENTER ID</h2>
+    <p class="section-sub">输入发布者给你的ID</p>
+    <div class="input-group">
+      <input class="input" id="manual-pubid" placeholder="8-CHAR ID" maxlength="8" style="text-transform:uppercase">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="manualAnswer()">START</button>
+    <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="showScreen('screen-start')">BACK</button>
+  </div>
+</section>
+
+<!-- ========== 答题介绍 ========== -->
+<section id="screen-answer-intro" class="screen">
+  <div class="card">
+    <div class="start-emojis">!</div>
+    <h2 class="section-title" id="answer-intro-name">XX 想和你算算账！</h2>
+    <p class="section-sub">两组小问题，轻松好玩<br>答卷完全匿名，放心选！</p>
+    <div style="background:var(--bg2);border:2px solid var(--border);padding:16px;margin-bottom:20px;text-align:left">
+      <div style="font-size:14px;color:var(--cyan);font-weight:700;margin-bottom:8px">> HOW TO PLAY</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.8">
+        <div>STAGE 1: 我有没有对不起你</div>
+        <div>STAGE 2: 你有没有对不起我</div>
+        <div>STAGE 3: 每题选 确实/好像/真没有</div>
+        <div>STAGE 4: 哪组"有"多，谁就低头！</div>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="startQuiz()">START</button>
+  </div>
+</section>
+
+<!-- ========== 答题A组 ========== -->
+<section id="screen-quiz-a" class="screen">
+  <div class="quiz-top">
+    <div class="progress-bar"><div class="progress-fill" id="prog-a" style="width:0%"></div></div>
+    <div class="progress-text" id="prog-a-text"></div>
+  </div>
+  <div class="card q-card">
+    <div class="group-label">STAGE 1 · 我有没有对不起你</div>
+    <div class="q-num" id="q-a-num"></div>
+    <div class="q-text"><span class="q-prefix">我有没有…</span><span id="q-a-text"></span></div>
+    <div class="q-options">
+      <button class="q-opt yes" onclick="answerA(2)">确实有</button>
+      <button class="q-opt yes" onclick="answerA(1)">好像有</button>
+      <button class="q-opt no" onclick="answerA(0)">真没有</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 过渡 ========== -->
+<section id="screen-transition" class="screen">
+  <div class="card">
+    <div class="start-emojis">>></div>
+    <h2 class="section-title">STAGE 1 CLEAR!</h2>
+    <p class="section-sub">接下来轮到你了<br>你有没有对不起我的事？</p>
+    <button class="btn btn-primary btn-full" onclick="startQuizB()">CONTINUE</button>
+  </div>
+</section>
+
+<!-- ========== 答题B组 ========== -->
+<section id="screen-quiz-b" class="screen">
+  <div class="quiz-top">
+    <div class="progress-bar"><div class="progress-fill" id="prog-b" style="width:0%;background:var(--yellow)"></div></div>
+    <div class="progress-text" id="prog-b-text"></div>
+  </div>
+  <div class="card q-card">
+    <div class="group-label b">STAGE 2 · 你有没有对不起我</div>
+    <div class="q-num" id="q-b-num"></div>
+    <div class="q-text"><span class="q-prefix" style="color:var(--yellow)">你有没有…</span><span id="q-b-text"></span></div>
+    <div class="q-options">
+      <button class="q-opt yes" onclick="answerB(2)">确实有</button>
+      <button class="q-opt yes" onclick="answerB(1)">好像有</button>
+      <button class="q-opt no" onclick="answerB(0)">真没有</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 答题结果 ========== -->
+<section id="screen-answer-result" class="screen">
+  <div class="card">
+    <div class="result-emoji" id="result-emoji">▼</div>
+    <h2 class="result-title" id="result-title">YOU APOLOGIZE!</h2>
+    <p class="result-desc" id="result-desc"></p>
+    <div class="score-row">
+      <div class="score-box"><div class="score-num" id="result-a">0</div><div class="score-label">我对不起你</div></div>
+      <div class="score-box b"><div class="score-num" id="result-b">0</div><div class="score-label">你对不起我</div></div>
+    </div>
+    <div id="submit-area">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:12px">提交后结果会发给发布者（完全匿名）</p>
+      <button class="btn btn-primary btn-full" onclick="submitResponse()">SUBMIT</button>
+    </div>
+    <div id="submitted-area" style="display:none">
+      <p style="font-size:15px;color:var(--green);font-weight:700;margin-bottom:12px">>> SUBMITTED!</p>
+      <button class="btn btn-ghost btn-sm" onclick="showScreen('screen-start')">DONE</button>
+    </div>
+  </div>
+</section>
+
+<script>
+/* =====================================================
+ * 配置区 — 接入后端请修改下面两行
+ * 详见 README：https://supabase.com → 创建免费项目
+ * SQL: 见下方 SUPABASE_SQL 变量
+ * ===================================================== */
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const BACKEND_ENABLED = SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('YOUR_');
+
+/* Supabase 建表 SQL（复制到 Supabase SQL Editor 执行）*/
+const SUPABASE_SQL = `CREATE TABLE responses (
+  id BIGSERIAL PRIMARY KEY,
+  publisher_id TEXT NOT NULL,
+  publisher_name TEXT,
+  q_count INTEGER DEFAULT 8,
+  answers_a JSONB NOT NULL,
+  answers_b JSONB NOT NULL,
+  a_yes INTEGER NOT NULL,
+  b_yes INTEGER NOT NULL,
+  result TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX idx_responses_pub ON responses(publisher_id);
+ALTER TABLE responses ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anon_insert" ON responses FOR INSERT WITH (true);
+CREATE POLICY "anon_select" ON responses FOR SELECT USING (true);`;
+
+/* =====================================================
+ * 题库 — 两组严格分开，人称清晰
+ * A组：我对不起你的事（题面用"你"）
+ * B组：你对不起我的事（题面用"我"）
+ * ===================================================== */
+const POOL_A = [
+  '放过你鸽子','不回你消息超过一天','说话太冲戳到你了','忘了答应你的小事',
+  '你兴冲冲分享时泼过冷水','答应给你的惊喜没兑现','你难过时没主动安慰','约会迟到让你等过半小时',
+  '当众开你玩笑有点过','忘了你的生日或重要日子','答应替你保密的事说漏嘴了','借你的东西拖很久才还',
+  '答应请客最后偷偷溜了','你说话时一直刷手机','在你面前炫过优越感','没接住你的梗冷场了',
+  '答应陪你做的事爽约了','吃饭时一直玩手机不理你','你请客时我点了一堆贵的','误会你了但没正式道歉',
+  '你发的朋友圈我从不点赞','你精心打扮我都没注意到','半夜你发消息我没回','你推荐的剧我嘴上答应没看',
+  '在别人面前拆过你台'
+];
+const POOL_B = [
+  '放过我鸽子','不回我消息超过一天','说话太冲戳到我了','忘了答应我的小事',
+  '我兴冲冲分享时泼过冷水','答应给我的惊喜没兑现','我难过时没主动来安慰','约会迟到让我等过半小时',
+  '当众开我玩笑有点过','忘了我的生日或重要日子','答应替我保密的事说漏嘴了','借我的东西拖很久才还',
+  '答应请客最后偷偷溜了','我说话时你一直刷手机','在我面前炫过优越感','没接住我抛的梗冷场了',
+  '答应陪我做的事爽约了','吃饭时一直玩手机不理我','我请客时你点了一堆贵的','误会我了但没正式道歉',
+  '我发的朋友圈你从不点赞','我精心打扮你都没注意到','半夜我发消息你没回','我推荐的剧你嘴上答应没看',
+  '在别人面前拆过我的台'
+];
+
+/* ===================================================== 状态 */
+let state = {
+  publisher: null,
+  quiz: null,
+  selectedCount: 8,
+  selectedMode: 'random',
+  answersA: [],
+  answersB: [],
+  qIdxA: 0,
+  qIdxB: 0,
+  currentPubId: null,
+  currentPubName: '',
+  pendingResult: null
+};
+
+/* ===================================================== 后端 */
+async function saveResponse(data) {
+  if (BACKEND_ENABLED) {
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/responses', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'},
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) throw new Error();
+      return 'cloud';
+    } catch(e) { console.warn('cloud save failed, fallback local'); }
+  }
+  const key = 'sms_resp_' + data.publisher_id;
+  const arr = JSON.parse(localStorage.getItem(key) || '[]');
+  arr.push({...data, created_at: new Date().toISOString()});
+  localStorage.setItem(key, JSON.stringify(arr));
+  return 'local';
+}
+
+async function getResponses(pubId) {
+  if (BACKEND_ENABLED) {
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/responses?publisher_id=eq.' + pubId + '&order=created_at.desc', {
+        headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}
+      });
+      if (!res.ok) throw new Error();
+      return await res.json();
+    } catch(e) { console.warn('cloud fetch failed, fallback local'); }
+  }
+  return JSON.parse(localStorage.getItem('sms_resp_' + pubId) || '[]');
+}
+
+/* ===================================================== 工具 */
+function generateId() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let id = '';
+  for (let i = 0; i < 8; i++) id += chars[Math.floor(Math.random() * chars.length)];
+  return id;
+}
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function pickQuestions(pool, count, mode) {
+  if (mode === 'all') return shuffle(pool);
+  return shuffle(pool).slice(0, count);
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ===================================================== 屏幕切换 */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* ===================================================== 创建流程 */
+function goCreate() {
+  state.selectedCount = 8;
+  state.selectedMode = 'random';
+  document.getElementById('create-name').value = '';
+  document.querySelectorAll('#count-chips .chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.v === '8');
+  });
+  document.querySelectorAll('#mode-chips .chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.v === 'random');
+  });
+  showScreen('screen-create');
+}
+
+document.querySelectorAll('#count-chips .chip').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('#count-chips .chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    state.selectedCount = parseInt(c.dataset.v);
+  });
+});
+document.querySelectorAll('#mode-chips .chip').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('#mode-chips .chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    state.selectedMode = c.dataset.v;
+  });
+});
+
+function generateQuiz() {
+  const name = document.getElementById('create-name').value.trim();
+  if (!name) { showToast('请先填昵称'); return; }
+  if (typeof QRCode === 'undefined') { showToast('二维码库加载失败，请检查网络后刷新'); return; }
+  const count = state.selectedMode === 'all' ? 25 : state.selectedCount;
+  const pub = {
+    id: generateId(),
+    name: name,
+    count: count,
+    mode: state.selectedMode,
+    created: new Date().toISOString()
+  };
+  state.publisher = pub;
+  localStorage.setItem('sms_pub_' + pub.id, JSON.stringify(pub));
+  renderQR(pub);
+  showScreen('screen-qr');
+}
+
+function renderQR(pub) {
+  const baseUrl = window.location.href.split('#')[0];
+  const answerUrl = baseUrl + '#answer=' + pub.id + '&name=' + encodeURIComponent(pub.name) + '&count=' + pub.count + '&mode=' + pub.mode;
+  state.currentPubId = pub.id;
+  state.currentPubName = pub.name;
+  const container = document.getElementById('qr-display');
+  container.innerHTML = '';
+  new QRCode(container, { text: answerUrl, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+  document.getElementById('qr-pubid').textContent = 'ID: ' + pub.id;
+  document.getElementById('qr-url').textContent = answerUrl;
+}
+
+function copyAnswerUrl() {
+  const url = document.getElementById('qr-url').textContent;
+  navigator.clipboard.writeText(url).then(() => showToast('URL COPIED!'));
+}
+
+/* ===================================================== 分享卡片 */
+function showShareCard() {
+  document.getElementById('share-name').textContent = state.publisher.name;
+  const sq = document.getElementById('share-qr');
+  sq.innerHTML = '';
+  const baseUrl = window.location.href.split('#')[0];
+  const answerUrl = baseUrl + '#answer=' + state.publisher.id + '&name=' + encodeURIComponent(state.publisher.name) + '&count=' + state.publisher.count + '&mode=' + state.publisher.mode;
+  new QRCode(sq, { text: answerUrl, width: 140, height: 140, correctLevel: QRCode.CorrectLevel.M });
+  showScreen('screen-share');
+}
+
+async function downloadShareCard() {
+  const card = document.getElementById('share-card-el');
+  showToast('GENERATING...');
+  try {
+    const canvas = await html2canvas(card, { scale: 2, backgroundColor: null, useCORS: true });
+    const link = document.createElement('a');
+    link.download = 'sms-share-card.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('SAVED! Share it now~');
+  } catch(e) {
+    showToast('FAILED, try screenshot');
+  }
+}
+
+async function shareUrl() {
+  const baseUrl = window.location.href.split('#')[0];
+  const url = baseUrl + '#answer=' + state.publisher.id + '&name=' + encodeURIComponent(state.publisher.name) + '&count=' + state.publisher.count + '&mode=' + state.publisher.mode;
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: '私密马赛or给我道歉！', text: state.publisher.name + ' 邀你来算账！', url: url });
+    } catch(e) {}
+  } else {
+    navigator.clipboard.writeText(url).then(() => showToast('URL COPIED!'));
+  }
+}
+
+/* ===================================================== 看板 */
+function goResultsLogin() {
+  const list = document.getElementById('pub-list');
+  const pubs = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('sms_pub_')) {
+      pubs.push(JSON.parse(localStorage.getItem(key)));
+    }
+  }
+  if (pubs.length > 0) {
+    list.innerHTML = '<div style="font-size:13px;color:var(--text-dim);margin-bottom:8px">LOCAL:</div>' +
+      pubs.map(p => '<div style="font-size:13px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);margin-bottom:6px;cursor:pointer" onclick="document.getElementById(\'login-pubid\').value=\'' + p.id + '\'"><b>' + p.name + '</b> · ' + p.id + '</div>').join('');
+  } else {
+    list.innerHTML = '';
+  }
+  showScreen('screen-results-login');
+}
+
+function loginAndView() {
+  const id = document.getElementById('login-pubid').value.trim().toUpperCase();
+  if (!id) { showToast('ENTER ID'); return; }
+  state.currentPubId = id;
+  const localPub = JSON.parse(localStorage.getItem('sms_pub_' + id) || 'null');
+  state.currentPubName = localPub ? localPub.name : id;
+  loadDashboard();
+}
+
+function goDashboard() {
+  state.currentPubId = state.publisher.id;
+  state.currentPubName = state.publisher.name;
+  loadDashboard();
+}
+
+async function loadDashboard() {
+  showScreen('screen-dashboard');
+  document.getElementById('dash-sub').textContent = 'LOADING...';
+  document.getElementById('dash-content').innerHTML = '';
+  const pubId = state.currentPubId;
+  const pubName = state.currentPubName;
+  document.getElementById('dash-title').textContent = pubName + ' RESULT';
+  const responses = await getResponses(pubId);
+  renderDashboard(responses);
+}
+
+function renderDashboard(responses) {
+  const el = document.getElementById('dash-content');
+  if (!responses || responses.length === 0) {
+    el.innerHTML = '<div class="empty">NO DATA YET<br>快把二维码分享出去吧！</div>';
+    document.getElementById('dash-sub').textContent = 'WAITING FOR DATA...';
+    return;
+  }
+  const total = responses.length;
+  let totalA = 0, totalB = 0;
+  let aWin = 0, bWin = 0, tie = 0;
+  responses.forEach(r => {
+    totalA += r.a_yes || 0;
+    totalB += r.b_yes || 0;
+    if (r.a_yes > r.b_yes) aWin++;
+    else if (r.b_yes > r.a_yes) bWin++;
+    else tie++;
+  });
+  document.getElementById('dash-sub').textContent = total + ' RESPONSES';
+
+  let html = '';
+  html += '<div class="dash-stat">';
+  html += '<div class="dash-stat-box"><div class="dash-stat-num">' + totalA + '</div><div class="dash-stat-label">我对不起你</div></div>';
+  html += '<div class="dash-stat-box b"><div class="dash-stat-num">' + totalB + '</div><div class="dash-stat-label">你对不起我</div></div>';
+  html += '</div>';
+
+  html += '<div class="dash-section">';
+  html += '<h4>VERDICT</h4><div class="judge-row">';
+  html += '<div class="judge-box"><div class="judge-num" style="color:var(--red)">' + aWin + '</div><div class="judge-label">该我道歉</div></div>';
+  html += '<div class="judge-box b"><div class="judge-num" style="color:var(--yellow)">' + bWin + '</div><div class="judge-label">该你道歉</div></div>';
+  html += '<div class="judge-box tie"><div class="judge-num" style="color:var(--green)">' + tie + '</div><div class="judge-label">扯平</div></div>';
+  html += '</div></div>';
+
+  if (responses[0].answers_a && responses[0].answers_b) {
+    const qStatsA = {};
+    const qStatsB = {};
+    responses.forEach(r => {
+      (r.answers_a || []).forEach(a => {
+        if (!qStatsA[a.text]) qStatsA[a.text] = { yes: 0, total: 0 };
+        qStatsA[a.text].total++;
+        if (a.val > 0) qStatsA[a.text].yes++;
+      });
+      (r.answers_b || []).forEach(a => {
+        if (!qStatsB[a.text]) qStatsB[a.text] = { yes: 0, total: 0 };
+        qStatsB[a.text].total++;
+        if (a.val > 0) qStatsB[a.text].yes++;
+      });
+    });
+    const aKeys = Object.keys(qStatsA);
+    if (aKeys.length > 0) {
+      html += '<div class="dash-section"><h4>STAGE 1 · 我对不起你</h4>';
+      aKeys.sort((a,b) => qStatsA[b].yes - qStatsA[a].yes);
+      aKeys.forEach(text => {
+        const s = qStatsA[text];
+        const pct = s.total > 0 ? Math.round(s.yes / s.total * 100) : 0;
+        html += '<div class="bar-row"><div class="bar-label">' + text + '</div><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%">' + pct + '%</div></div></div>';
+      });
+      html += '</div>';
+    }
+    const bKeys = Object.keys(qStatsB);
+    if (bKeys.length > 0) {
+      html += '<div class="dash-section"><h4>STAGE 2 · 你对不起我</h4>';
+      bKeys.sort((a,b) => qStatsB[b].yes - qStatsB[a].yes);
+      bKeys.forEach(text => {
+        const s = qStatsB[text];
+        const pct = s.total > 0 ? Math.round(s.yes / s.total * 100) : 0;
+        html += '<div class="bar-row"><div class="bar-label">' + text + '</div><div class="bar-track"><div class="bar-fill b" style="width:' + pct + '%">' + pct + '%</div></div></div>';
+      });
+      html += '</div>';
+    }
+  }
+
+  let verdict = '';
+  if (totalA > totalB) verdict = '总体来看…你欠TA的比较多，该低头了';
+  else if (totalB > totalA) verdict = '总体来看…TA欠你的比较多，理直气壮吧';
+  else verdict = '总体来看…打个平手，互请奶茶吧';
+  html += '<div style="background:var(--bg2);border:2px solid var(--border);padding:14px;font-size:14px;color:var(--cyan);text-align:center">' + verdict + '</div>';
+
+  el.innerHTML = html;
+}
+
+/* ===================================================== 答题流程 */
+function goAnswerLogin() {
+  document.getElementById('manual-pubid').value = '';
+  showScreen('screen-answer-login');
+}
+
+function manualAnswer() {
+  const id = document.getElementById('manual-pubid').value.trim().toUpperCase();
+  if (!id) { showToast('ENTER ID'); return; }
+  startAnswer(id, '');
+}
+
+function startAnswer(pubId, pubName) {
+  const hash = window.location.hash;
+  const hashStr = hash.startsWith('#') ? hash.substring(1) : hash;
+  const p = new URLSearchParams(hashStr);
+  const count = parseInt(p.get('count') || '8');
+  const mode = p.get('mode') || 'random';
+
+  state.currentPubId = pubId;
+  state.currentPubName = pubName || (p.get('name') ? decodeURIComponent(p.get('name')) : '');
+  if (!state.currentPubName) {
+    const localPub = JSON.parse(localStorage.getItem('sms_pub_' + pubId) || 'null');
+    state.currentPubName = localPub ? localPub.name : '某位玩家';
+  }
+
+  const realCount = mode === 'all' ? 25 : Math.min(count, 25);
+  state.quiz = {
+    questionsA: pickQuestions(POOL_A, realCount, mode),
+    questionsB: pickQuestions(POOL_B, realCount, mode),
+    count: realCount
+  };
+  state.answersA = [];
+  state.answersB = [];
+  state.qIdxA = 0;
+  state.qIdxB = 0;
+
+  document.getElementById('answer-intro-name').textContent = state.currentPubName + ' 想和你算算账！';
+  showScreen('screen-answer-intro');
+}
+
+function startQuiz() {
+  state.qIdxA = 0;
+  showQuestionA();
+}
+
+function showQuestionA() {
+  const i = state.qIdxA;
+  const qs = state.quiz.questionsA;
+  if (i >= qs.length) { showTransition(); return; }
+  document.getElementById('q-a-num').textContent = 'Q' + (i + 1) + ' / ' + qs.length;
+  document.getElementById('q-a-text').textContent = qs[i] + '？';
+  document.getElementById('prog-a').style.width = ((i / qs.length) * 100) + '%';
+  document.getElementById('prog-a-text').textContent = (i + 1) + ' / ' + qs.length;
+  showScreen('screen-quiz-a');
+}
+
+function answerA(val) {
+  state.answersA.push({ text: state.quiz.questionsA[state.qIdxA], val: val });
+  state.qIdxA++;
+  showQuestionA();
+}
+
+function showTransition() {
+  showScreen('screen-transition');
+}
+
+function startQuizB() {
+  state.qIdxB = 0;
+  showQuestionB();
+}
+
+function showQuestionB() {
+  const i = state.qIdxB;
+  const qs = state.quiz.questionsB;
+  if (i >= qs.length) { showAnswerResult(); return; }
+  document.getElementById('q-b-num').textContent = 'Q' + (i + 1) + ' / ' + qs.length;
+  document.getElementById('q-b-text').textContent = qs[i] + '？';
+  document.getElementById('prog-b').style.width = ((i / qs.length) * 100) + '%';
+  document.getElementById('prog-b-text').textContent = (i + 1) + ' / ' + qs.length;
+  showScreen('screen-quiz-b');
+}
+
+function answerB(val) {
+  state.answersB.push({ text: state.quiz.questionsB[state.qIdxB], val: val });
+  state.qIdxB++;
+  showQuestionB();
+}
+
+function showAnswerResult() {
+  const aYes = state.answersA.filter(a => a.val > 0).length;
+  const bYes = state.answersB.filter(a => a.val > 0).length;
+  let emoji, title, desc, cls, result;
+  if (aYes > bYes) {
+    emoji = '▼'; title = '我该私密马赛！'; cls = 'a-win';
+    desc = '我对不起你的事比较多（' + aYes + ' vs ' + bYes + '），乖乖低头认错吧～';
+    result = 'a_win';
+  } else if (bYes > aYes) {
+    emoji = '▶_▶'; title = '你该给我道歉！'; cls = 'b-win';
+    desc = '你对不起我的事比较多（' + bYes + ' vs ' + aYes + '），理直气壮要求道歉！';
+    result = 'b_win';
+  } else {
+    emoji = '=_='; title = '扯平了！'; cls = 'tie';
+    desc = '两边都是 ' + aYes + ' 件，谁也别嫌弃谁～互请一杯奶茶吧！';
+    result = 'tie';
+  }
+  document.getElementById('result-emoji').textContent = emoji;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-title').className = 'result-title ' + cls;
+  document.getElementById('result-desc').textContent = desc;
+  document.getElementById('result-a').textContent = aYes;
+  document.getElementById('result-b').textContent = bYes;
+  document.getElementById('submit-area').style.display = '';
+  document.getElementById('submitted-area').style.display = 'none';
+  state.pendingResult = { aYes, bYes, result, answersA: state.answersA, answersB: state.answersB };
+  showScreen('screen-answer-result');
+}
+
+async function submitResponse() {
+  const data = {
+    publisher_id: state.currentPubId,
+    publisher_name: state.currentPubName,
+    q_count: state.quiz.count,
+    answers_a: state.answersA,
+    answers_b: state.answersB,
+    a_yes: state.pendingResult.aYes,
+    b_yes: state.pendingResult.bYes,
+    result: state.pendingResult.result
+  };
+  const btn = document.querySelector('#submit-area .btn');
+  btn.textContent = 'SUBMITTING...';
+  btn.disabled = true;
+  const mode = await saveResponse(data);
+  document.getElementById('submit-area').style.display = 'none';
+  document.getElementById('submitted-area').style.display = '';
+  if (mode === 'cloud') showToast('SUBMITTED TO CLOUD!');
+  else showToast('SAVED LOCALLY');
+}
+
+/* ===================================================== 初始化 */
+function init() {
+  const badge = document.getElementById('cloud-badge');
+  if (BACKEND_ENABLED) {
+    badge.textContent = 'CLOUD';
+    badge.className = 'badge-cloud on';
+  } else {
+    badge.textContent = 'LOCAL';
+    badge.className = 'badge-cloud off';
+  }
+  const hash = window.location.hash;
+  if (hash.includes('answer=')) {
+    const hashStr = hash.startsWith('#') ? hash.substring(1) : hash;
+    const p = new URLSearchParams(hashStr);
+    const pid = p.get('answer');
+    const pname = p.get('name') ? decodeURIComponent(p.get('name')) : '';
+    if (pid) startAnswer(pid, pname);
+    return;
+  }
+  showScreen('screen-start');
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
