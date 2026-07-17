@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>私密马赛or给我道歉！</title>
+<script src="https://cdn.bootcdn.net/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>if(typeof QRCode==='undefined'){document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>')}</script>
+<script src="https://cdn.bootcdn.net/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>if(typeof html2canvas==='undefined'){document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>')}</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --pink-deep:#e84a8a;--pink:#ff6b9d;--pink-light:#ffd3e0;--pink-bg:#fff5f8;--pink-bg2:#ffe8f0;
+  --mint:#a8e6cf;--mint-deep:#7eccb0;--cream:#fff9fb;
+  --text:#4a3340;--text-light:#8a6a75;
+  --shadow:0 8px 32px rgba(232,74,138,.12);--shadow-btn:0 4px 0 #d14974;--radius:20px;
+}
+html,body{height:100%}
+body{
+  font-family:'Noto Sans SC','PingFang SC','HarmonyOS Sans SC','Microsoft YaHei',sans-serif;
+  background:linear-gradient(160deg,var(--pink-bg) 0%,var(--pink-bg2) 50%,var(--pink-bg) 100%);
+  color:var(--text);min-height:100vh;overflow-x:hidden;
+}
+.title-font{font-family:'ZCOOL KuaiLe','Ma Shan Zheng','PingFang SC','Microsoft YaHei',sans-serif;font-weight:700}
+/* 装饰浮动 */
+.deco{position:fixed;font-size:24px;opacity:.15;pointer-events:none;animation:float 6s ease-in-out infinite;z-index:0}
+@keyframes float{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-20px) rotate(10deg)}}
+/* 屏幕系统 */
+.screen{display:none;min-height:100vh;padding:24px 20px;position:relative;z-index:1;animation:fadeIn .4s ease}
+.screen.active{display:flex;flex-direction:column;align-items:center;justify-content:center}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--cream);border-radius:var(--radius);padding:32px 24px;box-shadow:var(--shadow);max-width:420px;width:100%;text-align:center;position:relative}
+.card-narrow{max-width:380px}
+/* 按钮 */
+.btn{display:inline-block;padding:14px 36px;border:none;border-radius:16px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;text-align:center;text-decoration:none}
+.btn-primary{background:var(--pink);color:#fff;box-shadow:var(--shadow-btn)}
+.btn-primary:active{transform:translateY(2px);box-shadow:0 2px 0 #d14974}
+.btn-mint{background:var(--mint);color:#2d5a4a;box-shadow:0 4px 0 var(--mint-deep)}
+.btn-mint:active{transform:translateY(2px);box-shadow:0 2px 0 var(--mint-deep)}
+.btn-ghost{background:var(--pink-light);color:var(--pink-deep)}
+.btn-outline{background:transparent;border:2px solid var(--pink);color:var(--pink-deep)}
+.btn-sm{padding:10px 20px;font-size:14px;border-radius:12px}
+.btn-full{display:block;width:100%}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+/* 开始页 */
+.start-title{font-size:38px;color:var(--pink-deep);margin-bottom:8px;line-height:1.2}
+.start-sub{font-size:15px;color:var(--text-light);margin-bottom:28px;line-height:1.6}
+.start-emojis{font-size:48px;margin-bottom:20px;animation:bounce 2s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.btn-stack{display:flex;flex-direction:column;gap:12px;width:100%;max-width:280px;margin:0 auto}
+/* 输入 */
+.input-group{margin-bottom:20px;text-align:left}
+.input-label{font-size:14px;color:var(--text-light);margin-bottom:8px;font-weight:500}
+.input{width:100%;padding:14px 16px;border:2px solid var(--pink-light);border-radius:14px;font-size:16px;font-family:inherit;background:#fff;color:var(--text);transition:border-color .2s}
+.input:focus{outline:none;border-color:var(--pink)}
+.chip-row{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:8px 16px;border-radius:12px;border:2px solid var(--pink-light);background:#fff;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;color:var(--text)}
+.chip.active{border-color:var(--pink);background:var(--pink);color:#fff}
+.chip:active{transform:scale(.95)}
+/* QR页 */
+.qr-wrap{background:#fff;padding:20px;border-radius:16px;display:inline-block;margin:16px 0;box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.qr-wrap img,.qr-wrap canvas{display:block}
+.pub-id{font-size:13px;color:var(--text-light);margin-top:8px;letter-spacing:2px}
+.answer-url{font-size:11px;color:var(--text-light);word-break:break-all;background:var(--pink-bg);padding:8px 12px;border-radius:8px;margin-top:12px;line-height:1.4}
+/* 答题 */
+.quiz-top{width:100%;max-width:420px;margin-bottom:16px}
+.progress-bar{height:8px;background:var(--pink-light);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:var(--pink);border-radius:4px;transition:width .3s ease}
+.progress-text{font-size:13px;color:var(--text-light);margin-top:6px;text-align:center}
+.group-label{font-size:15px;font-weight:700;color:var(--pink-deep);background:var(--pink-light);padding:6px 16px;border-radius:20px;display:inline-block;margin-bottom:20px}
+.group-label.b{background:var(--mint);color:#2d5a4a}
+.q-card{padding:36px 24px}
+.q-num{font-size:14px;color:var(--text-light);margin-bottom:8px}
+.q-text{font-size:22px;font-weight:700;color:var(--text);margin-bottom:28px;line-height:1.5}
+.q-prefix{color:var(--pink);font-size:18px;display:block;margin-bottom:4px}
+.q-options{display:flex;flex-direction:column;gap:10px}
+.q-opt{padding:16px;border:2px solid var(--pink-light);border-radius:16px;background:#fff;font-size:16px;font-weight:500;cursor:pointer;transition:all .15s;text-align:center;font-family:inherit;color:var(--text)}
+.q-opt:active{transform:scale(.97);border-color:var(--pink);background:var(--pink-bg)}
+.q-opt.yes:active{background:var(--pink);color:#fff;border-color:var(--pink)}
+.q-opt.no:active{background:var(--mint);color:#2d5a4a;border-color:var(--mint)}
+/* 结果 */
+.result-emoji{font-size:72px;margin-bottom:8px;animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+.result-title{font-size:30px;margin-bottom:12px}
+.result-title.a-win{color:var(--pink-deep)}
+.result-title.b-win{color:var(--mint-deep)}
+.result-title.tie{color:#9b6bb0}
+.result-desc{font-size:15px;color:var(--text-light);line-height:1.6;margin-bottom:20px}
+.score-row{display:flex;gap:12px;margin-bottom:20px}
+.score-box{flex:1;background:var(--pink-bg);border-radius:14px;padding:16px 8px}
+.score-box.b{background:#f0fff7}
+.score-num{font-size:28px;font-weight:700;color:var(--pink-deep)}
+.score-box.b .score-num{color:var(--mint-deep)}
+.score-label{font-size:12px;color:var(--text-light);margin-top:4px}
+/* 看板 */
+.dash-stat{display:flex;gap:12px;margin-bottom:20px}
+.dash-stat-box{flex:1;background:var(--pink-bg);border-radius:14px;padding:14px}
+.dash-stat-box.b{background:#f0fff7}
+.dash-stat-num{font-size:24px;font-weight:700;color:var(--pink-deep)}
+.dash-stat-box.b .dash-stat-num{color:var(--mint-deep)}
+.dash-stat-label{font-size:12px;color:var(--text-light)}
+.dash-section{margin-bottom:20px;text-align:left}
+.dash-section h4{font-size:15px;color:var(--text);margin-bottom:10px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px}
+.bar-label{flex:0 0 140px;color:var(--text-light);line-height:1.3}
+.bar-track{flex:1;height:22px;background:var(--pink-bg);border-radius:6px;overflow:hidden;position:relative}
+.bar-fill{height:100%;background:var(--pink);border-radius:6px;transition:width .5s ease;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:11px;color:#fff;font-weight:700}
+.bar-fill.b{background:var(--mint)}
+.bar-fill.tie{background:#c8a2d4}
+.judge-row{display:flex;gap:8px;margin-bottom:8px}
+.judge-box{flex:1;text-align:center;padding:12px 8px;border-radius:12px;background:var(--pink-bg)}
+.judge-box.b{background:#f0fff7}
+.judge-box.tie{background:#f5f0f8}
+.judge-num{font-size:20px;font-weight:700}
+.judge-label{font-size:11px;color:var(--text-light);margin-top:2px}
+/* 分享卡片 */
+.share-card{width:375px;border-radius:24px;overflow:hidden;position:relative;box-shadow:0 12px 40px rgba(0,0,0,.15)}
+.share-card-bg{background:linear-gradient(160deg,#ff6b9d,#e84a8a 40%,#c44a9d);padding:40px 28px;color:#fff;text-align:center}
+.share-card h2{font-family:'ZCOOL KuaiLe','PingFang SC','Microsoft YaHei',sans-serif;font-size:32px;margin-bottom:6px;line-height:1.2;text-shadow:0 2px 8px rgba(0,0,0,.15);font-weight:700}
+.share-card .sub{font-size:14px;opacity:.9;margin-bottom:20px}
+.share-card .pub-name{font-size:18px;font-weight:700;background:rgba(255,255,255,.2);display:inline-block;padding:6px 18px;border-radius:20px;margin-bottom:16px}
+.share-card .qr-area{background:#fff;padding:16px;border-radius:16px;display:inline-block;margin-bottom:16px}
+.share-card .tagline{font-size:15px;line-height:1.5;margin-bottom:8px}
+.share-card .hint{font-size:12px;opacity:.8;margin-top:12px}
+.share-card .footer{font-size:11px;opacity:.6;margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2)}
+/* 杂项 */
+.badge-cloud{position:fixed;top:12px;right:12px;font-size:11px;padding:4px 10px;border-radius:8px;z-index:99}
+.badge-cloud.on{background:var(--mint);color:#2d5a4a}
+.badge-cloud.off{background:#ffe0e0;color:#c44}
+.empty{text-align:center;padding:40px 20px;color:var(--text-light);font-size:15px}
+.loading{text-align:center;padding:20px;color:var(--text-light)}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:12px;font-size:14px;z-index:999;opacity:0;transition:opacity .3s}
+.toast.show{opacity:1}
+.section-title{font-size:18px;font-weight:700;margin-bottom:6px}
+.section-sub{font-size:14px;color:var(--text-light);margin-bottom:24px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="deco" style="top:10%;left:5%">💕</div>
+<div class="deco" style="top:20%;right:8%;animation-delay:1s">🎀</div>
+<div class="deco" style="bottom:15%;left:7%;animation-delay:2s">🌸</div>
+<div class="deco" style="bottom:25%;right:5%;animation-delay:.5s">✨</div>
+<div id="cloud-badge" class="badge-cloud off">本地模式</div>
+<div id="toast" class="toast"></div>
+
+<!-- ========== 开始页 ========== -->
+<section id="screen-start" class="screen active">
+  <div class="card">
+    <div class="start-emojis">🙇 😤</div>
+    <h1 class="start-title title-font">私密马赛<br>or 给我道歉！</h1>
+    <p class="start-sub">两组小问题，算算谁欠谁的<br>轻松好玩，不上纲上线～</p>
+    <div class="btn-stack">
+      <button class="btn btn-primary btn-full" onclick="goCreate()">创建我的问卷</button>
+      <button class="btn btn-mint btn-full" onclick="goResultsLogin()">查看收到的结果</button>
+      <button class="btn btn-ghost btn-full" onclick="goAnswerLogin()">输入ID来答题</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 创建问卷 ========== -->
+<section id="screen-create" class="screen">
+  <div class="card">
+    <h2 class="section-title">创建专属问卷</h2>
+    <p class="section-sub">填好信息，生成你的专属二维码</p>
+    <div class="input-group">
+      <div class="input-label">你的昵称</div>
+      <input class="input" id="create-name" placeholder="比如：小甜心" maxlength="12">
+    </div>
+    <div class="input-group">
+      <div class="input-label">每组抽几道题？</div>
+      <div class="chip-row" id="count-chips">
+        <div class="chip" data-v="5">5题</div>
+        <div class="chip active" data-v="8">8题</div>
+        <div class="chip" data-v="10">10题</div>
+        <div class="chip" data-v="15">15题</div>
+        <div class="chip" data-v="25">全部25题</div>
+      </div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">出题模式</div>
+      <div class="chip-row" id="mode-chips">
+        <div class="chip active" data-v="random">随机抽取</div>
+        <div class="chip" data-v="all">全部打乱顺序</div>
+      </div>
+    </div>
+    <div style="background:var(--pink-bg);border-radius:12px;padding:14px;margin-bottom:20px;text-align:left">
+      <div style="font-size:13px;color:var(--pink-deep);font-weight:700;margin-bottom:6px">📋 答题说明</div>
+      <div style="font-size:12px;color:var(--text-light);line-height:1.5">
+        <div>📌 第一组：我有没有对不起你（发布者自省）</div>
+        <div>📌 第二组：你有没有对不起我（操作者反省）</div>
+        <div>📌 哪组"有"多，谁就低头认错！</div>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="generateQuiz()">生成专属二维码</button>
+    <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="showScreen('screen-start')">返回</button>
+  </div>
+</section>
+
+<!-- ========== 二维码页 ========== -->
+<section id="screen-qr" class="screen">
+  <div class="card">
+    <h2 class="section-title">专属二维码已生成！</h2>
+    <p class="section-sub">把这个码发给TA，扫码就能答题</p>
+    <div class="qr-wrap" id="qr-display"></div>
+    <div class="pub-id" id="qr-pubid"></div>
+    <div class="answer-url" id="qr-url"></div>
+    <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;justify-content:center">
+      <button class="btn btn-primary btn-sm" onclick="showShareCard()">保存分享卡片</button>
+      <button class="btn btn-mint btn-sm" onclick="goDashboard()">查看结果</button>
+      <button class="btn btn-ghost btn-sm" onclick="copyAnswerUrl()">复制链接</button>
+    </div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="showScreen('screen-start')">返回首页</button>
+  </div>
+</section>
+
+<!-- ========== 分享卡片 ========== -->
+<section id="screen-share" class="screen">
+  <div class="card card-narrow" style="background:transparent;box-shadow:none;padding:0">
+    <div id="share-card-el" class="share-card">
+      <div class="share-card-bg">
+        <h2>私密马赛<br>还是给我道歉！</h2>
+        <div class="sub">来算算我们谁欠谁的～</div>
+        <div class="pub-name" id="share-name">小甜心</div>
+        <div>喊你来算账啦！</div>
+        <div class="qr-area" id="share-qr"></div>
+        <div class="tagline">扫码进入 → 两组小问题<br>看最后谁该低头认错 😤</div>
+        <div class="hint">答卷完全匿名，放心作答</div>
+        <div class="footer">私密马赛or给我道歉 · 趣味互怼小问答</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:20px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" onclick="downloadShareCard()">保存图片</button>
+      <button class="btn btn-mint btn-sm" onclick="shareUrl()">分享链接</button>
+      <button class="btn btn-ghost btn-sm" onclick="showScreen('screen-qr')">返回</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 结果看板 ========== -->
+<section id="screen-dashboard" class="screen">
+  <div class="card" style="max-width:460px">
+    <h2 class="section-title" id="dash-title">收到的结果</h2>
+    <p class="section-sub" id="dash-sub">加载中...</p>
+    <div id="dash-content"></div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-mint btn-sm" onclick="loadDashboard()">刷新</button>
+      <button class="btn btn-ghost btn-sm" onclick="showScreen('screen-start')">返回首页</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 查看结果登录 ========== -->
+<section id="screen-results-login" class="screen">
+  <div class="card card-narrow">
+    <h2 class="section-title">查看结果</h2>
+    <p class="section-sub">输入你的发布者ID</p>
+    <div class="input-group">
+      <input class="input" id="login-pubid" placeholder="8位ID，如 P7K3A2B9" maxlength="8" style="text-transform:uppercase">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="loginAndView()">查看结果</button>
+    <div id="pub-list" style="margin-top:16px;text-align:left"></div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="showScreen('screen-start')">返回</button>
+  </div>
+</section>
+
+<!-- ========== 答题登录 ========== -->
+<section id="screen-answer-login" class="screen">
+  <div class="card card-narrow">
+    <h2 class="section-title">输入ID来答题</h2>
+    <p class="section-sub">输入发布者给你的ID</p>
+    <div class="input-group">
+      <input class="input" id="manual-pubid" placeholder="8位ID" maxlength="8" style="text-transform:uppercase">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="manualAnswer()">开始答题</button>
+    <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="showScreen('screen-start')">返回</button>
+  </div>
+</section>
+
+<!-- ========== 答题介绍 ========== -->
+<section id="screen-answer-intro" class="screen">
+  <div class="card">
+    <div class="start-emojis">📝</div>
+    <h2 class="section-title" id="answer-intro-name">XX 想和你算算账！</h2>
+    <p class="section-sub">两组小问题，轻松好玩<br>答卷完全匿名，放心选！</p>
+    <div style="background:var(--pink-bg);border-radius:14px;padding:16px;margin-bottom:20px;text-align:left">
+      <div style="font-size:14px;color:var(--pink-deep);font-weight:700;margin-bottom:8px">📋 玩法</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.8">
+        <div>① 第一组：我有没有对不起你</div>
+        <div>② 第二组：你有没有对不起我</div>
+        <div>③ 每题选"确实有/好像有/真没有"</div>
+        <div>④ 哪组"有"多，谁就低头认错！</div>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="startQuiz()">开始答题</button>
+  </div>
+</section>
+
+<!-- ========== 答题A组 ========== -->
+<section id="screen-quiz-a" class="screen">
+  <div class="quiz-top">
+    <div class="progress-bar"><div class="progress-fill" id="prog-a" style="width:0%"></div></div>
+    <div class="progress-text" id="prog-a-text"></div>
+  </div>
+  <div class="card q-card">
+    <div class="group-label">第一组 · 我有没有对不起你</div>
+    <div class="q-num" id="q-a-num"></div>
+    <div class="q-text"><span class="q-prefix">我有没有…</span><span id="q-a-text"></span></div>
+    <div class="q-options">
+      <button class="q-opt yes" onclick="answerA(2)">确实有 😅</button>
+      <button class="q-opt yes" onclick="answerA(1)">好像有 🤔</button>
+      <button class="q-opt no" onclick="answerA(0)">真没有 🙅</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 过渡 ========== -->
+<section id="screen-transition" class="screen">
+  <div class="card">
+    <div class="start-emojis">✏️</div>
+    <h2 class="section-title">第一组答完啦！</h2>
+    <p class="section-sub">接下来轮到你了<br>你有没有对不起我的事？</p>
+    <button class="btn btn-primary btn-full" onclick="startQuizB()">继续答题</button>
+  </div>
+</section>
+
+<!-- ========== 答题B组 ========== -->
+<section id="screen-quiz-b" class="screen">
+  <div class="quiz-top">
+    <div class="progress-bar"><div class="progress-fill" id="prog-b" style="width:0%"></div></div>
+    <div class="progress-text" id="prog-b-text"></div>
+  </div>
+  <div class="card q-card">
+    <div class="group-label b">第二组 · 你有没有对不起我</div>
+    <div class="q-num" id="q-b-num"></div>
+    <div class="q-text"><span class="q-prefix" style="color:var(--mint-deep)">你有没有…</span><span id="q-b-text"></span></div>
+    <div class="q-options">
+      <button class="q-opt yes" onclick="answerB(2)">确实有 😅</button>
+      <button class="q-opt yes" onclick="answerB(1)">好像有 🤔</button>
+      <button class="q-opt no" onclick="answerB(0)">真没有 🙅</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 答题结果 ========== -->
+<section id="screen-answer-result" class="screen">
+  <div class="card">
+    <div class="result-emoji" id="result-emoji">🙇</div>
+    <h2 class="result-title" id="result-title">私密马赛！</h2>
+    <p class="result-desc" id="result-desc"></p>
+    <div class="score-row">
+      <div class="score-box"><div class="score-num" id="result-a">0</div><div class="score-label">我对不起你</div></div>
+      <div class="score-box b"><div class="score-num" id="result-b">0</div><div class="score-label">你对不起我</div></div>
+    </div>
+    <div id="submit-area">
+      <p style="font-size:13px;color:var(--text-light);margin-bottom:12px">提交后结果会发给发布者（完全匿名）</p>
+      <button class="btn btn-primary btn-full" onclick="submitResponse()">提交结果</button>
+    </div>
+    <div id="submitted-area" style="display:none">
+      <p style="font-size:15px;color:var(--mint-deep);font-weight:700;margin-bottom:12px">✅ 已提交！</p>
+      <button class="btn btn-ghost btn-sm" onclick="showScreen('screen-start')">完成</button>
+    </div>
+  </div>
+</section>
+
+<script>
+/* =====================================================
+ * 配置区 — 接入后端请修改下面两行
+ * 详见 README：https://supabase.com → 创建免费项目
+ * SQL: 见下方 SUPABASE_SQL 变量
+ * ===================================================== */
+const SUPABASE_URL = YOUR_SUPABASE_URL'https://shptqzqzudmobqtqwqsb.supabase.co/rest/v1/';
+const SUPABASE_ANON_KEY = 'Ysb_secret_oBHmyE_UoMRd0etTm33hFQ_qOlvOSq0OUR_SUPABASE_ANON_KEY';
+const BACKEND_ENABLED = SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('YOUR_');
+
+/* Supabase 建表 SQL（复制到 Supabase SQL Editor 执行）*/
+const SUPABASE_SQL = `CREATE TABLE responses (
+  id BIGSERIAL PRIMARY KEY,
+  publisher_id TEXT NOT NULL,
+  publisher_name TEXT,
+  q_count INTEGER DEFAULT 8,
+  answers_a JSONB NOT NULL,
+  answers_b JSONB NOT NULL,
+  a_yes INTEGER NOT NULL,
+  b_yes INTEGER NOT NULL,
+  result TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX idx_responses_pub ON responses(publisher_id);
+ALTER TABLE responses ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anon_insert" ON responses FOR INSERT WITH (true);
+CREATE POLICY "anon_select" ON responses FOR SELECT USING (true);`;
+
+/* =====================================================
+ * 题库 — 两组严格分开，人称清晰
+ * A组：我对不起你的事（题面用"你"）
+ * B组：你对不起我的事（题面用"我"）
+ * ===================================================== */
+const POOL_A = [
+  '放过你鸽子','不回你消息超过一天','说话太冲戳到你了','忘了答应你的小事',
+  '你兴冲冲分享时泼过冷水','答应给你的惊喜没兑现','你难过时没主动安慰','约会迟到让你等过半小时',
+  '当众开你玩笑有点过','忘了你的生日或重要日子','答应替你保密的事说漏嘴了','借你的东西拖很久才还',
+  '答应请客最后偷偷溜了','你说话时一直刷手机','在你面前炫过优越感','没接住你的梗冷场了',
+  '答应陪你做的事爽约了','吃饭时一直玩手机不理你','你请客时我点了一堆贵的','误会你了但没正式道歉',
+  '你发的朋友圈我从不点赞','你精心打扮我都没注意到','半夜你发消息我没回','你推荐的剧我嘴上答应没看',
+  '在别人面前拆过你台'
+];
+const POOL_B = [
+  '放过我鸽子','不回我消息超过一天','说话太冲戳到我了','忘了答应我的小事',
+  '我兴冲冲分享时泼过冷水','答应给我的惊喜没兑现','我难过时没主动来安慰','约会迟到让我等过半小时',
+  '当众开我玩笑有点过','忘了我的生日或重要日子','答应替我保密的事说漏嘴了','借我的东西拖很久才还',
+  '答应请客最后偷偷溜了','我说话时你一直刷手机','在我面前炫过优越感','没接住我抛的梗冷场了',
+  '答应陪我做的事爽约了','吃饭时一直玩手机不理我','我请客时你点了一堆贵的','误会我了但没正式道歉',
+  '我发的朋友圈你从不点赞','我精心打扮你都没注意到','半夜我发消息你没回','我推荐的剧你嘴上答应没看',
+  '在别人面前拆过我的台'
+];
+
+/* ===================================================== 状态 */
+let state = {
+  publisher: null,
+  quiz: null,
+  selectedCount: 8,
+  selectedMode: 'random',
+  answersA: [],
+  answersB: [],
+  qIdxA: 0,
+  qIdxB: 0,
+  currentPubId: null,
+  currentPubName: '',
+  pendingResult: null
+};
+
+/* ===================================================== 后端 */
+async function saveResponse(data) {
+  if (BACKEND_ENABLED) {
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/responses', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'},
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) throw new Error();
+      return 'cloud';
+    } catch(e) { console.warn('cloud save failed, fallback local'); }
+  }
+  const key = 'sms_resp_' + data.publisher_id;
+  const arr = JSON.parse(localStorage.getItem(key) || '[]');
+  arr.push({...data, created_at: new Date().toISOString()});
+  localStorage.setItem(key, JSON.stringify(arr));
+  return 'local';
+}
+
+async function getResponses(pubId) {
+  if (BACKEND_ENABLED) {
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/responses?publisher_id=eq.' + pubId + '&order=created_at.desc', {
+        headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}
+      });
+      if (!res.ok) throw new Error();
+      return await res.json();
+    } catch(e) { console.warn('cloud fetch failed, fallback local'); }
+  }
+  return JSON.parse(localStorage.getItem('sms_resp_' + pubId) || '[]');
+}
+
+/* ===================================================== 工具 */
+function generateId() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let id = '';
+  for (let i = 0; i < 8; i++) id += chars[Math.floor(Math.random() * chars.length)];
+  return id;
+}
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function pickQuestions(pool, count, mode) {
+  if (mode === 'all') return shuffle(pool);
+  return shuffle(pool).slice(0, count);
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ===================================================== 屏幕切换 */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* ===================================================== 创建流程 */
+function goCreate() {
+  state.selectedCount = 8;
+  state.selectedMode = 'random';
+  document.getElementById('create-name').value = '';
+  document.querySelectorAll('#count-chips .chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.v === '8');
+  });
+  document.querySelectorAll('#mode-chips .chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.v === 'random');
+  });
+  showScreen('screen-create');
+}
+
+document.querySelectorAll('#count-chips .chip').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('#count-chips .chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    state.selectedCount = parseInt(c.dataset.v);
+  });
+});
+document.querySelectorAll('#mode-chips .chip').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('#mode-chips .chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    state.selectedMode = c.dataset.v;
+  });
+});
+
+function generateQuiz() {
+  const name = document.getElementById('create-name').value.trim();
+  if (!name) { showToast('请先填昵称～'); return; }
+  if (typeof QRCode === 'undefined') { showToast('二维码库加载失败，请检查网络后刷新页面'); return; }
+  const count = state.selectedMode === 'all' ? 25 : state.selectedCount;
+  const pub = {
+    id: generateId(),
+    name: name,
+    count: count,
+    mode: state.selectedMode,
+    created: new Date().toISOString()
+  };
+  state.publisher = pub;
+  // 存到本地
+  localStorage.setItem('sms_pub_' + pub.id, JSON.stringify(pub));
+  renderQR(pub);
+  showScreen('screen-qr');
+}
+
+function renderQR(pub) {
+  const baseUrl = window.location.href.split('#')[0];
+  const answerUrl = baseUrl + '#answer=' + pub.id + '&name=' + encodeURIComponent(pub.name) + '&count=' + pub.count + '&mode=' + pub.mode;
+  state.currentPubId = pub.id;
+  state.currentPubName = pub.name;
+  // QR
+  const container = document.getElementById('qr-display');
+  container.innerHTML = '';
+  new QRCode(container, { text: answerUrl, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+  document.getElementById('qr-pubid').textContent = 'ID: ' + pub.id;
+  document.getElementById('qr-url').textContent = answerUrl;
+}
+
+function copyAnswerUrl() {
+  const url = document.getElementById('qr-url').textContent;
+  navigator.clipboard.writeText(url).then(() => showToast('链接已复制！'));
+}
+
+/* ===================================================== 分享卡片 */
+function showShareCard() {
+  document.getElementById('share-name').textContent = state.publisher.name;
+  const sq = document.getElementById('share-qr');
+  sq.innerHTML = '';
+  const baseUrl = window.location.href.split('#')[0];
+  const answerUrl = baseUrl + '#answer=' + state.publisher.id + '&name=' + encodeURIComponent(state.publisher.name) + '&count=' + state.publisher.count + '&mode=' + state.publisher.mode;
+  new QRCode(sq, { text: answerUrl, width: 140, height: 140, correctLevel: QRCode.CorrectLevel.M });
+  showScreen('screen-share');
+}
+
+async function downloadShareCard() {
+  const card = document.getElementById('share-card-el');
+  showToast('正在生成图片...');
+  try {
+    const canvas = await html2canvas(card, { scale: 2, backgroundColor: null, useCORS: true });
+    const link = document.createElement('a');
+    link.download = '私密马赛-邀请卡.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('图片已保存！发到朋友圈吧～');
+  } catch(e) {
+    showToast('生成失败，请截图分享');
+  }
+}
+
+async function shareUrl() {
+  const baseUrl = window.location.href.split('#')[0];
+  const url = baseUrl + '#answer=' + state.publisher.id + '&name=' + encodeURIComponent(state.publisher.name) + '&count=' + state.publisher.count + '&mode=' + state.publisher.mode;
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: '私密马赛or给我道歉！', text: state.publisher.name + ' 邀你来算账！', url: url });
+    } catch(e) {}
+  } else {
+    navigator.clipboard.writeText(url).then(() => showToast('链接已复制！去微信粘贴给好友～'));
+  }
+}
+
+/* ===================================================== 看板 */
+function goResultsLogin() {
+  // 显示本地存储的发布者列表
+  const list = document.getElementById('pub-list');
+  const pubs = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('sms_pub_')) {
+      pubs.push(JSON.parse(localStorage.getItem(key)));
+    }
+  }
+  if (pubs.length > 0) {
+    list.innerHTML = '<div style="font-size:13px;color:var(--text-light);margin-bottom:8px">本地发布者：</div>' +
+      pubs.map(p => '<div style="font-size:13px;padding:8px 12px;background:var(--pink-bg);border-radius:10px;margin-bottom:6px;cursor:pointer" onclick="document.getElementById(\'login-pubid\').value=\'' + p.id + '\'"><b>' + p.name + '</b> · ' + p.id + '</div>').join('');
+  } else {
+    list.innerHTML = '';
+  }
+  showScreen('screen-results-login');
+}
+
+function loginAndView() {
+  const id = document.getElementById('login-pubid').value.trim().toUpperCase();
+  if (!id) { showToast('请输入ID'); return; }
+  state.currentPubId = id;
+  // 尝试从本地拿名称
+  const localPub = JSON.parse(localStorage.getItem('sms_pub_' + id) || 'null');
+  state.currentPubName = localPub ? localPub.name : id;
+  loadDashboard();
+}
+
+function goDashboard() {
+  state.currentPubId = state.publisher.id;
+  state.currentPubName = state.publisher.name;
+  loadDashboard();
+}
+
+async function loadDashboard() {
+  showScreen('screen-dashboard');
+  document.getElementById('dash-sub').textContent = '加载中...';
+  document.getElementById('dash-content').innerHTML = '';
+  const pubId = state.currentPubId;
+  const pubName = state.currentPubName;
+  document.getElementById('dash-title').textContent = pubName + ' 的结果看板';
+  const responses = await getResponses(pubId);
+  renderDashboard(responses);
+}
+
+function renderDashboard(responses) {
+  const el = document.getElementById('dash-content');
+  if (!responses || responses.length === 0) {
+    el.innerHTML = '<div class="empty">还没有人答题 😢<br>快把二维码分享出去吧！</div>';
+    document.getElementById('dash-sub').textContent = '等待第一份答卷...';
+    return;
+  }
+  const total = responses.length;
+  let totalA = 0, totalB = 0;
+  let aWin = 0, bWin = 0, tie = 0;
+  // 逐题统计（只对固定题目的模式有意义，随机模式按总"有"数统计）
+  responses.forEach(r => {
+    totalA += r.a_yes || 0;
+    totalB += r.b_yes || 0;
+    if (r.a_yes > r.b_yes) aWin++;
+    else if (r.b_yes > r.a_yes) bWin++;
+    else tie++;
+  });
+  document.getElementById('dash-sub').textContent = '共收到 ' + total + ' 份答卷';
+
+  let html = '';
+  // 总统计
+  html += '<div class="dash-stat">';
+  html += '<div class="dash-stat-box"><div class="dash-stat-num">' + totalA + '</div><div class="dash-stat-label">我对不起你（总"有"数）</div></div>';
+  html += '<div class="dash-stat-box b"><div class="dash-stat-num">' + totalB + '</div><div class="dash-stat-label">你对不起我（总"有"数）</div></div>';
+  html += '</div>';
+
+  // 判定分布
+  html += '<div class="dash-section">';
+  html += '<h4>判定分布</h4><div class="judge-row">';
+  html += '<div class="judge-box"><div class="judge-num" style="color:var(--pink-deep)">' + aWin + '</div><div class="judge-label">该我私密马赛</div></div>';
+  html += '<div class="judge-box b"><div class="judge-num" style="color:var(--mint-deep)">' + bWin + '</div><div class="judge-label">该你给我道歉</div></div>';
+  html += '<div class="judge-box tie"><div class="judge-num" style="color:#9b6bb0">' + tie + '</div><div class="judge-label">扯平了</div></div>';
+  html += '</div></div>';
+
+  // 逐题统计（如果有 answers_a/answers_b 的详细数据）
+  if (responses[0].answers_a && responses[0].answers_b) {
+    // 收集所有题目文本和每题的"有"率
+    const qStatsA = {}; // text → {yes, total}
+    const qStatsB = {};
+    responses.forEach(r => {
+      (r.answers_a || []).forEach(a => {
+        if (!qStatsA[a.text]) qStatsA[a.text] = { yes: 0, total: 0 };
+        qStatsA[a.text].total++;
+        if (a.val > 0) qStatsA[a.text].yes++;
+      });
+      (r.answers_b || []).forEach(a => {
+        if (!qStatsB[a.text]) qStatsB[a.text] = { yes: 0, total: 0 };
+        qStatsB[a.text].total++;
+        if (a.val > 0) qStatsB[a.text].yes++;
+      });
+    });
+    // 渲染A组
+    const aKeys = Object.keys(qStatsA);
+    if (aKeys.length > 0) {
+      html += '<div class="dash-section"><h4>第一组 · 我对不起你的事（逐题）</h4>';
+      aKeys.sort((a,b) => qStatsA[b].yes - qStatsA[a].yes);
+      aKeys.forEach(text => {
+        const s = qStatsA[text];
+        const pct = s.total > 0 ? Math.round(s.yes / s.total * 100) : 0;
+        html += '<div class="bar-row"><div class="bar-label">' + text + '</div><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%">' + pct + '%</div></div></div>';
+      });
+      html += '</div>';
+    }
+    // 渲染B组
+    const bKeys = Object.keys(qStatsB);
+    if (bKeys.length > 0) {
+      html += '<div class="dash-section"><h4>第二组 · 你对不起我的事（逐题）</h4>';
+      bKeys.sort((a,b) => qStatsB[b].yes - qStatsB[a].yes);
+      bKeys.forEach(text => {
+        const s = qStatsB[text];
+        const pct = s.total > 0 ? Math.round(s.yes / s.total * 100) : 0;
+        html += '<div class="bar-row"><div class="bar-label">' + text + '</div><div class="bar-track"><div class="bar-fill b" style="width:' + pct + '%">' + pct + '%</div></div></div>';
+      });
+      html += '</div>';
+    }
+  }
+
+  // 总结
+  let verdict = '';
+  if (totalA > totalB) verdict = '总体来看…你欠TA的比较多，该低头了 🙇';
+  else if (totalB > totalA) verdict = '总体来看…TA欠你的比较多，理直气壮吧 😤';
+  else verdict = '总体来看…打个平手，互请奶茶吧 🤝';
+  html += '<div style="background:var(--pink-bg);border-radius:12px;padding:14px;font-size:14px;color:var(--text);text-align:center">' + verdict + '</div>';
+
+  el.innerHTML = html;
+}
+
+/* ===================================================== 答题流程 */
+function goAnswerLogin() {
+  document.getElementById('manual-pubid').value = '';
+  showScreen('screen-answer-login');
+}
+
+function manualAnswer() {
+  const id = document.getElementById('manual-pubid').value.trim().toUpperCase();
+  if (!id) { showToast('请输入ID'); return; }
+  startAnswer(id, '');
+}
+
+function startAnswer(pubId, pubName) {
+  // 从hash参数获取完整配置
+  const hash = window.location.hash;
+  const params = new URLSearchParams(hash.substring(hash.indexOf('?') >= 0 ? hash.indexOf('?') + 1 : 1));
+  // 兼容 #answer=xxx&name=xxx&count=xxx&mode=xxx
+  const hashStr = hash.startsWith('#') ? hash.substring(1) : hash;
+  const p = new URLSearchParams(hashStr);
+  const count = parseInt(p.get('count') || '8');
+  const mode = p.get('mode') || 'random';
+
+  state.currentPubId = pubId;
+  state.currentPubName = pubName || p.get('name') ? decodeURIComponent(p.get('name')) : '';
+  if (!state.currentPubName) {
+    // 从本地查
+    const localPub = JSON.parse(localStorage.getItem('sms_pub_' + pubId) || 'null');
+    state.currentPubName = localPub ? localPub.name : '某位朋友';
+  }
+
+  // 生成题目
+  const realCount = mode === 'all' ? 25 : Math.min(count, 25);
+  state.quiz = {
+    questionsA: pickQuestions(POOL_A, realCount, mode),
+    questionsB: pickQuestions(POOL_B, realCount, mode),
+    count: realCount
+  };
+  state.answersA = [];
+  state.answersB = [];
+  state.qIdxA = 0;
+  state.qIdxB = 0;
+
+  document.getElementById('answer-intro-name').textContent = state.currentPubName + ' 想和你算算账！';
+  showScreen('screen-answer-intro');
+}
+
+function startQuiz() {
+  state.qIdxA = 0;
+  showQuestionA();
+}
+
+function showQuestionA() {
+  const i = state.qIdxA;
+  const qs = state.quiz.questionsA;
+  if (i >= qs.length) { showTransition(); return; }
+  document.getElementById('q-a-num').textContent = '第 ' + (i + 1) + ' / ' + qs.length + ' 题';
+  document.getElementById('q-a-text').textContent = qs[i] + '？';
+  document.getElementById('prog-a').style.width = ((i / qs.length) * 100) + '%';
+  document.getElementById('prog-a-text').textContent = (i + 1) + ' / ' + qs.length;
+  showScreen('screen-quiz-a');
+}
+
+function answerA(val) {
+  state.answersA.push({ text: state.quiz.questionsA[state.qIdxA], val: val });
+  state.qIdxA++;
+  showQuestionA();
+}
+
+function showTransition() {
+  showScreen('screen-transition');
+}
+
+function startQuizB() {
+  state.qIdxB = 0;
+  showQuestionB();
+}
+
+function showQuestionB() {
+  const i = state.qIdxB;
+  const qs = state.quiz.questionsB;
+  if (i >= qs.length) { showAnswerResult(); return; }
+  document.getElementById('q-b-num').textContent = '第 ' + (i + 1) + ' / ' + qs.length + ' 题';
+  document.getElementById('q-b-text').textContent = qs[i] + '？';
+  document.getElementById('prog-b').style.width = ((i / qs.length) * 100) + '%';
+  document.getElementById('prog-b-text').textContent = (i + 1) + ' / ' + qs.length;
+  showScreen('screen-quiz-b');
+}
+
+function answerB(val) {
+  state.answersB.push({ text: state.quiz.questionsB[state.qIdxB], val: val });
+  state.qIdxB++;
+  showQuestionB();
+}
+
+function showAnswerResult() {
+  const aYes = state.answersA.filter(a => a.val > 0).length;
+  const bYes = state.answersB.filter(a => a.val > 0).length;
+  let emoji, title, desc, cls, result;
+  if (aYes > bYes) {
+    emoji = '🙇'; title = '我该私密马赛！'; cls = 'a-win';
+    desc = '我对不起你的事比较多（' + aYes + '件 vs ' + bYes + '件），乖乖低头认错吧～';
+    result = 'a_win';
+  } else if (bYes > aYes) {
+    emoji = '😤'; title = '你该给我道歉！'; cls = 'b-win';
+    desc = '你对不起我的事比较多（' + bYes + '件 vs ' + aYes + '件），理直气壮要求道歉！';
+    result = 'b_win';
+  } else {
+    emoji = '🤝'; title = '扯平了！'; cls = 'tie';
+    desc = '两边都是 ' + aYes + ' 件，谁也别嫌弃谁～互请一杯奶茶吧！';
+    result = 'tie';
+  }
+  document.getElementById('result-emoji').textContent = emoji;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-title').className = 'result-title ' + cls;
+  document.getElementById('result-desc').textContent = desc;
+  document.getElementById('result-a').textContent = aYes;
+  document.getElementById('result-b').textContent = bYes;
+  document.getElementById('submit-area').style.display = '';
+  document.getElementById('submitted-area').style.display = 'none';
+  state.pendingResult = { aYes, bYes, result, answersA: state.answersA, answersB: state.answersB };
+  showScreen('screen-answer-result');
+}
+
+async function submitResponse() {
+  const data = {
+    publisher_id: state.currentPubId,
+    publisher_name: state.currentPubName,
+    q_count: state.quiz.count,
+    answers_a: state.answersA,
+    answers_b: state.answersB,
+    a_yes: state.pendingResult.aYes,
+    b_yes: state.pendingResult.bYes,
+    result: state.pendingResult.result
+  };
+  document.querySelector('#submit-area .btn').textContent = '提交中...';
+  document.querySelector('#submit-area .btn').disabled = true;
+  const mode = await saveResponse(data);
+  document.getElementById('submit-area').style.display = 'none';
+  document.getElementById('submitted-area').style.display = '';
+  if (mode === 'cloud') showToast('已提交到云端！');
+  else showToast('已保存（本地模式）');
+}
+
+/* ===================================================== 初始化 */
+function init() {
+  // 检测后端状态
+  const badge = document.getElementById('cloud-badge');
+  if (BACKEND_ENABLED) {
+    badge.textContent = '☁️ 云端';
+    badge.className = 'badge-cloud on';
+  } else {
+    badge.textContent = '本地模式';
+    badge.className = 'badge-cloud off';
+  }
+  // 检测URL hash → 答题
+  const hash = window.location.hash;
+  if (hash.includes('answer=')) {
+    const hashStr = hash.startsWith('#') ? hash.substring(1) : hash;
+    const p = new URLSearchParams(hashStr);
+    const pid = p.get('answer');
+    const pname = p.get('name') ? decodeURIComponent(p.get('name')) : '';
+    if (pid) startAnswer(pid, pname);
+    return;
+  }
+  showScreen('screen-start');
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
